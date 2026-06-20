@@ -1,1 +1,6 @@
-<Solution />
+<Solution>
+  <Project Path="PosManager.Business/PosManager.Business.csproj" Id="a59794d8-b647-4375-99ca-a417d6401139" />
+  <Project Path="PosManager.Data/PosManager.Data.csproj" Id="53bf49d4-1794-4e05-aa3d-92d6a6349dd0" />
+  <Project Path="PosManager.Domain/PosManager.Domain.csproj" Id="e716374a-7526-446e-90f0-abb78e86db2d" />
+  <Project Path="PosManager.WebApi/PosManager.WebApi.csproj" Id="494703c4-1ca0-46a1-af06-2ff93fac922a" />
+</Solution>

@@ -1,0 +1,6 @@
+@PosManager.WebApi_HostAddress = http://localhost:5188
+
+GET {{PosManager.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
