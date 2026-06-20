@@ -32,6 +32,7 @@ namespace PosManager.Domain
         private decimal superficie;
         private string unidadSuperficie;
         private decimal volumen;
+        private List<Categoria> categorias;
 
         public Producto()
         {
@@ -64,7 +65,8 @@ namespace PosManager.Domain
             string unidadLongitud,
             decimal superficie,
             string unidadSuperficie,
-            decimal volumen)
+            decimal volumen,
+            List<Categoria> categorias)
         {
             this.productId = productId;
             this.nombreEtiqueta = nombreEtiqueta;
@@ -92,6 +94,7 @@ namespace PosManager.Domain
             this.superficie = superficie;
             this.unidadSuperficie = unidadSuperficie;
             this.volumen = volumen;
+            this.categorias = categorias;
         }
 
         public int ProductId
@@ -248,6 +251,12 @@ namespace PosManager.Domain
         {
             get => volumen;
             set => volumen = value;
+        }
+
+        public List<Categoria> Categorias
+        {
+            get => categorias;
+            set => categorias = value;
         }
     }
 }
