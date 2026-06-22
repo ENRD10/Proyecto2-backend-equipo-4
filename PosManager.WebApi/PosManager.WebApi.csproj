@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PosManager.Business\PosManager.Business.csproj" />
-    <ProjectReference Include="..\PosManager.Data\PosManager.Data.csproj" />
     <ProjectReference Include="..\PosManager.Domain\PosManager.Domain.csproj" />
   </ItemGroup>
 
