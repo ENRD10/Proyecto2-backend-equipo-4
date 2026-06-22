@@ -1,4 +1,3 @@
-=====
 using Microsoft.AspNetCore.Mvc;
 using PosManager.Business;
 using PosManager.Domain.DTOs;
