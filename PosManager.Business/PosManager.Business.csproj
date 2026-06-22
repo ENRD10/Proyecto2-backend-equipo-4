@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PosManager.Data\PosManager.Data.csproj" />
+    <ProjectReference Include="..\PosManager.Domain\PosManager.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
