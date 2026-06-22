@@ -1,4 +1,3 @@
-
 using Microsoft.Data.SqlClient;
 using PosManager.Domain;
 using PosManager.Domain.DTOs;
@@ -35,34 +34,34 @@ namespace PosManager.Data
                     totalOrden += precioConImpuesto;
                 }
 
-                // 2. Insertar cabecera en OrdenVenta
+                // 2. Insertar cabecera en pos_orden
                 int numeroOrden;
                 const string sqlCabecera = @"
-                    INSERT INTO OrdenVenta 
-                        (IdCliente, IdEmpleado, FechaOrden, TotalOrden, Impuesto)
-                    OUTPUT INSERTED.NumeroOrden
+                    INSERT INTO pos_orden 
+                        (fk_cliente, fk_empleado, fecha_orden, total_orden, impuesto)
+                    OUTPUT INSERTED.numero_orden
                     VALUES 
-                        (@IdCliente, @IdEmpleado, @FechaOrden, @TotalOrden, @Impuesto)";
+                        (@fk_cliente, @fk_empleado, @fecha_orden, @total_orden, @impuesto)";
 
                 using (var cmdCabecera = new SqlCommand(sqlCabecera, connection, transaction))
                 {
-                    cmdCabecera.Parameters.AddWithValue("@IdCliente", request.IdCliente);
-                    cmdCabecera.Parameters.AddWithValue("@IdEmpleado", request.IdEmpleado);
-                    cmdCabecera.Parameters.AddWithValue("@FechaOrden", request.FechaOrden);
-                    cmdCabecera.Parameters.AddWithValue("@TotalOrden", totalOrden);
-                    cmdCabecera.Parameters.AddWithValue("@Impuesto", request.Impuesto);
+                    cmdCabecera.Parameters.AddWithValue("@fk_cliente", request.IdCliente);
+                    cmdCabecera.Parameters.AddWithValue("@fk_empleado", request.IdEmpleado);
+                    cmdCabecera.Parameters.AddWithValue("@fecha_orden", request.FechaOrden);
+                    cmdCabecera.Parameters.AddWithValue("@total_orden", totalOrden);
+                    cmdCabecera.Parameters.AddWithValue("@impuesto", request.Impuesto);
 
                     numeroOrden = (int)cmdCabecera.ExecuteScalar();
                 }
 
-                // 3. Insertar cada línea en DetalleOrdenVenta
+                // 3. Insertar cada línea en pos_orden_detalle
                 const string sqlDetalle = @"
-                    INSERT INTO DetalleOrdenVenta 
-                        (NumeroOrden, IdProducto, Cantidad, PrecioUnitario, 
-                         Descuento, Impuesto, PrecioSubtotal, PrecioTotal)
+                    INSERT INTO pos_orden_detalle 
+                        (fk_pos_orden, fk_producto, cantidad, precio_unitario, 
+                         descuento, impuesto, precio_subtotal, precio_total)
                     VALUES 
-                        (@NumeroOrden, @IdProducto, @Cantidad, @PrecioUnitario,
-                         @Descuento, @Impuesto, @PrecioSubtotal, @PrecioTotal)";
+                        (@fk_pos_orden, @fk_producto, @cantidad, @precio_unitario,
+                         @descuento, @impuesto, @precio_subtotal, @precio_total)";
 
                 foreach (var detalle in request.Detalles)
                 {
@@ -72,14 +71,14 @@ namespace PosManager.Data
                     decimal precioTotal = precioSubtotal * (1 + detalle.Impuesto / 100);
 
                     using var cmdDetalle = new SqlCommand(sqlDetalle, connection, transaction);
-                    cmdDetalle.Parameters.AddWithValue("@NumeroOrden", numeroOrden);
-                    cmdDetalle.Parameters.AddWithValue("@IdProducto", detalle.IdProducto);
-                    cmdDetalle.Parameters.AddWithValue("@Cantidad", detalle.Cantidad);
-                    cmdDetalle.Parameters.AddWithValue("@PrecioUnitario", detalle.PrecioUnitario);
-                    cmdDetalle.Parameters.AddWithValue("@Descuento", detalle.Descuento);
-                    cmdDetalle.Parameters.AddWithValue("@Impuesto", detalle.Impuesto);
-                    cmdDetalle.Parameters.AddWithValue("@PrecioSubtotal", precioSubtotal);
-                    cmdDetalle.Parameters.AddWithValue("@PrecioTotal", precioTotal);
+                    cmdDetalle.Parameters.AddWithValue("@fk_pos_orden", numeroOrden);
+                    cmdDetalle.Parameters.AddWithValue("@fk_producto", detalle.IdProducto);
+                    cmdDetalle.Parameters.AddWithValue("@cantidad", detalle.Cantidad);
+                    cmdDetalle.Parameters.AddWithValue("@precio_unitario", detalle.PrecioUnitario);
+                    cmdDetalle.Parameters.AddWithValue("@descuento", detalle.Descuento);
+                    cmdDetalle.Parameters.AddWithValue("@impuesto", detalle.Impuesto);
+                    cmdDetalle.Parameters.AddWithValue("@precio_subtotal", precioSubtotal);
+                    cmdDetalle.Parameters.AddWithValue("@precio_total", precioTotal);
                     cmdDetalle.ExecuteNonQuery();
                 }
 
@@ -102,16 +101,16 @@ namespace PosManager.Data
 
             const string sql = @"
                 SELECT 
-                    ov.NumeroOrden, ov.IdCliente, ov.IdEmpleado,
-                    ov.FechaOrden, ov.TotalOrden, ov.Impuesto,
+                    ov.numero_orden, ov.fk_cliente, ov.fk_empleado,
+                    ov.fecha_orden, ov.total_orden, ov.impuesto,
                     p_cli.Nombre + ' ' + p_cli.Apellidos AS NombreCliente,
                     p_emp.Nombre + ' ' + p_emp.Apellidos AS NombreEmpleado
-                FROM OrdenVenta ov
-                INNER JOIN Cliente c ON ov.IdCliente = c.Id
+                FROM pos_orden ov
+                INNER JOIN Cliente c ON ov.fk_cliente = c.Id
                 INNER JOIN Persona p_cli ON c.Id = p_cli.Id
-                INNER JOIN Empleado e ON ov.IdEmpleado = e.Id
+                INNER JOIN Empleado e ON ov.fk_empleado = e.Id
                 INNER JOIN Persona p_emp ON e.Id = p_emp.Id
-                ORDER BY ov.FechaOrden DESC";
+                ORDER BY ov.fecha_orden DESC";
 
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
@@ -122,14 +121,14 @@ namespace PosManager.Data
             {
                 ventas.Add(new VentaResponse
                 {
-                    NumeroOrden = reader.GetInt32(reader.GetOrdinal("NumeroOrden")),
-                    IdCliente = reader.GetInt32(reader.GetOrdinal("IdCliente")),
+                    NumeroOrden = reader.GetInt32(reader.GetOrdinal("numero_orden")),
+                    IdCliente = reader.GetInt32(reader.GetOrdinal("fk_cliente")),
                     NombreCliente = reader.GetString(reader.GetOrdinal("NombreCliente")),
-                    IdEmpleado = reader.GetInt32(reader.GetOrdinal("IdEmpleado")),
+                    IdEmpleado = reader.GetInt32(reader.GetOrdinal("fk_empleado")),
                     NombreEmpleado = reader.GetString(reader.GetOrdinal("NombreEmpleado")),
-                    FechaOrden = reader.GetDateTime(reader.GetOrdinal("FechaOrden")),
-                    TotalOrden = reader.GetDecimal(reader.GetOrdinal("TotalOrden")),
-                    Impuesto = reader.GetDecimal(reader.GetOrdinal("Impuesto"))
+                    FechaOrden = reader.GetDateTime(reader.GetOrdinal("fecha_orden")),
+                    TotalOrden = reader.GetDecimal(reader.GetOrdinal("total_orden")),
+                    Impuesto = reader.GetDecimal(reader.GetOrdinal("impuesto"))
                 });
             }
 
@@ -145,45 +144,45 @@ namespace PosManager.Data
 
             const string sqlCabecera = @"
                 SELECT 
-                    ov.NumeroOrden, ov.IdCliente, ov.IdEmpleado,
-                    ov.FechaOrden, ov.TotalOrden, ov.Impuesto,
+                    ov.numero_orden, ov.fk_cliente, ov.fk_empleado,
+                    ov.fecha_orden, ov.total_orden, ov.impuesto,
                     p_cli.Nombre + ' ' + p_cli.Apellidos AS NombreCliente,
                     p_emp.Nombre + ' ' + p_emp.Apellidos AS NombreEmpleado
-                FROM OrdenVenta ov
-                INNER JOIN Cliente c ON ov.IdCliente = c.Id
+                FROM pos_orden ov
+                INNER JOIN Cliente c ON ov.fk_cliente = c.Id
                 INNER JOIN Persona p_cli ON c.Id = p_cli.Id
-                INNER JOIN Empleado e ON ov.IdEmpleado = e.Id
+                INNER JOIN Empleado e ON ov.fk_empleado = e.Id
                 INNER JOIN Persona p_emp ON e.Id = p_emp.Id
-                WHERE ov.NumeroOrden = @NumeroOrden";
+                WHERE ov.numero_orden = @numero_orden";
 
             const string sqlDetalles = @"
                 SELECT 
-                    d.IdProducto, pr.NombreEtiqueta AS NombreProducto,
-                    d.Cantidad, d.PrecioUnitario, d.Descuento,
-                    d.Impuesto, d.PrecioSubtotal, d.PrecioTotal
-                FROM DetalleOrdenVenta d
-                INNER JOIN Producto pr ON d.IdProducto = pr.ProductId
-                WHERE d.NumeroOrden = @NumeroOrden";
+                    d.fk_producto, pr.NombreEtiqueta AS NombreProducto,
+                    d.cantidad, d.precio_unitario, d.descuento,
+                    d.impuesto, d.precio_subtotal, d.precio_total
+                FROM pos_orden_detalle d
+                INNER JOIN Producto pr ON d.fk_producto = pr.ProductId
+                WHERE d.fk_pos_orden = @numero_orden";
 
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
 
             using (var cmd = new SqlCommand(sqlCabecera, connection))
             {
-                cmd.Parameters.AddWithValue("@NumeroOrden", numeroOrden);
+                cmd.Parameters.AddWithValue("@numero_orden", numeroOrden);
                 using var reader = cmd.ExecuteReader();
                 if (reader.Read())
                 {
                     venta = new VentaResponse
                     {
-                        NumeroOrden = reader.GetInt32(reader.GetOrdinal("NumeroOrden")),
-                        IdCliente = reader.GetInt32(reader.GetOrdinal("IdCliente")),
+                        NumeroOrden = reader.GetInt32(reader.GetOrdinal("numero_orden")),
+                        IdCliente = reader.GetInt32(reader.GetOrdinal("fk_cliente")),
                         NombreCliente = reader.GetString(reader.GetOrdinal("NombreCliente")),
-                        IdEmpleado = reader.GetInt32(reader.GetOrdinal("IdEmpleado")),
+                        IdEmpleado = reader.GetInt32(reader.GetOrdinal("fk_empleado")),
                         NombreEmpleado = reader.GetString(reader.GetOrdinal("NombreEmpleado")),
-                        FechaOrden = reader.GetDateTime(reader.GetOrdinal("FechaOrden")),
-                        TotalOrden = reader.GetDecimal(reader.GetOrdinal("TotalOrden")),
-                        Impuesto = reader.GetDecimal(reader.GetOrdinal("Impuesto"))
+                        FechaOrden = reader.GetDateTime(reader.GetOrdinal("fecha_orden")),
+                        TotalOrden = reader.GetDecimal(reader.GetOrdinal("total_orden")),
+                        Impuesto = reader.GetDecimal(reader.GetOrdinal("impuesto"))
                     };
                 }
             }
@@ -192,20 +191,20 @@ namespace PosManager.Data
 
             using (var cmd = new SqlCommand(sqlDetalles, connection))
             {
-                cmd.Parameters.AddWithValue("@NumeroOrden", numeroOrden);
+                cmd.Parameters.AddWithValue("@numero_orden", numeroOrden);
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
                     venta.Detalles.Add(new DetalleVentaResponse
                     {
-                        IdProducto = reader.GetInt32(reader.GetOrdinal("IdProducto")),
+                        IdProducto = reader.GetInt32(reader.GetOrdinal("fk_producto")),
                         NombreProducto = reader.GetString(reader.GetOrdinal("NombreProducto")),
-                        Cantidad = reader.GetInt32(reader.GetOrdinal("Cantidad")),
-                        PrecioUnitario = reader.GetDecimal(reader.GetOrdinal("PrecioUnitario")),
-                        Descuento = reader.GetDecimal(reader.GetOrdinal("Descuento")),
-                        Impuesto = reader.GetDecimal(reader.GetOrdinal("Impuesto")),
-                        PrecioSubtotal = reader.GetDecimal(reader.GetOrdinal("PrecioSubtotal")),
-                        PrecioTotal = reader.GetDecimal(reader.GetOrdinal("PrecioTotal"))
+                        Cantidad = reader.GetInt32(reader.GetOrdinal("cantidad")),
+                        PrecioUnitario = reader.GetDecimal(reader.GetOrdinal("precio_unitario")),
+                        Descuento = reader.GetDecimal(reader.GetOrdinal("descuento")),
+                        Impuesto = reader.GetDecimal(reader.GetOrdinal("impuesto")),
+                        PrecioSubtotal = reader.GetDecimal(reader.GetOrdinal("precio_subtotal")),
+                        PrecioTotal = reader.GetDecimal(reader.GetOrdinal("precio_total"))
                     });
                 }
             }
@@ -219,21 +218,21 @@ namespace PosManager.Data
         public bool UpdateVenta(int numeroOrden, CreateVentaRequest request)
         {
             const string sql = @"
-                UPDATE OrdenVenta SET
-                    IdCliente  = @IdCliente,
-                    IdEmpleado = @IdEmpleado,
-                    FechaOrden = @FechaOrden,
-                    Impuesto   = @Impuesto
-                WHERE NumeroOrden = @NumeroOrden";
+                UPDATE pos_orden SET
+                    fk_cliente  = @fk_cliente,
+                    fk_empleado = @fk_empleado,
+                    fecha_orden = @fecha_orden,
+                    impuesto   = @impuesto
+                WHERE numero_orden = @numero_orden";
 
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
             using var cmd = new SqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@NumeroOrden", numeroOrden);
-            cmd.Parameters.AddWithValue("@IdCliente", request.IdCliente);
-            cmd.Parameters.AddWithValue("@IdEmpleado", request.IdEmpleado);
-            cmd.Parameters.AddWithValue("@FechaOrden", request.FechaOrden);
-            cmd.Parameters.AddWithValue("@Impuesto", request.Impuesto);
+            cmd.Parameters.AddWithValue("@numero_orden", numeroOrden);
+            cmd.Parameters.AddWithValue("@fk_cliente", request.IdCliente);
+            cmd.Parameters.AddWithValue("@fk_empleado", request.IdEmpleado);
+            cmd.Parameters.AddWithValue("@fecha_orden", request.FechaOrden);
+            cmd.Parameters.AddWithValue("@impuesto", request.Impuesto);
 
             return cmd.ExecuteNonQuery() > 0;
         }
@@ -251,20 +250,20 @@ namespace PosManager.Data
             {
                 // Primero eliminar detalles (FK)
                 using (var cmdDetalle = new SqlCommand(
-                    "DELETE FROM DetalleOrdenVenta WHERE NumeroOrden = @NumeroOrden",
+                    "DELETE FROM pos_orden_detalle WHERE fk_pos_orden = @numero_orden",
                     connection, transaction))
                 {
-                    cmdDetalle.Parameters.AddWithValue("@NumeroOrden", numeroOrden);
+                    cmdDetalle.Parameters.AddWithValue("@numero_orden", numeroOrden);
                     cmdDetalle.ExecuteNonQuery();
                 }
 
                 // Luego eliminar cabecera
                 int rows;
                 using (var cmdCab = new SqlCommand(
-                    "DELETE FROM OrdenVenta WHERE NumeroOrden = @NumeroOrden",
+                    "DELETE FROM pos_orden WHERE numero_orden = @numero_orden",
                     connection, transaction))
                 {
-                    cmdCab.Parameters.AddWithValue("@NumeroOrden", numeroOrden);
+                    cmdCab.Parameters.AddWithValue("@numero_orden", numeroOrden);
                     rows = cmdCab.ExecuteNonQuery();
                 }
 
