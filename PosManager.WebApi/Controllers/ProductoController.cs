@@ -13,7 +13,10 @@ namespace PosManager.WebApi.Controllers
 
         public ProductoController(IConfiguration configuration)
         {
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+            // Obtener la cadena de conexión desde la configuración
+            //var connectionString = configuration.GetConnectionString("DefaultConnection");
+            var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("DefaultConnection not found");
             var productoData = new ProductoData(connectionString);
             _productoBusiness = new ProductoBusiness(productoData);
         }
