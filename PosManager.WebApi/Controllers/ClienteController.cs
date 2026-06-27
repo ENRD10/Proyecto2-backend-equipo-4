@@ -6,16 +6,15 @@ using PosManager.Domain;
 namespace PosManager.WebApi.Controllers
 {
     [ApiController]
-    [Route("cliente")]
+    [Route("api/cliente")]
     public class ClienteController : ControllerBase
     {
         private readonly ClienteBusiness _clienteBusiness;
 
         public ClienteController(IConfiguration configuration)
         {
-            //            var connectionString = configuration.GetConnectionString("DefaultConnection");
-            var connectionString = configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("DefaultConnection is not configured.");
+            var connectionString = configuration.GetConnectionString("Lenguajes_Equipo4")
+                ?? throw new InvalidOperationException("Connection string 'Lenguajes_Equipo4' not found.");
             var clienteData = new ClienteData(connectionString);
             _clienteBusiness = new ClienteBusiness(clienteData);
         }

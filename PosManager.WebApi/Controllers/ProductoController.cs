@@ -6,17 +6,15 @@ using PosManager.Domain;
 namespace PosManager.WebApi.Controllers
 {
     [ApiController]
-    [Route("producto")]
+    [Route("api/producto")]
     public class ProductoController : ControllerBase
     {
         private readonly ProductoBusiness _productoBusiness;
 
         public ProductoController(IConfiguration configuration)
         {
-
-            // Obtener la cadena de conexión desde la configuración
-            //var connectionString = configuration.GetConnectionString("DefaultConnection");
-            var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("DefaultConnection not found");
+            var connectionString = configuration.GetConnectionString("Lenguajes_Equipo4")
+                ?? throw new InvalidOperationException("Connection string 'Lenguajes_Equipo4' not found.");
             var productoData = new ProductoData(connectionString);
             _productoBusiness = new ProductoBusiness(productoData);
         }

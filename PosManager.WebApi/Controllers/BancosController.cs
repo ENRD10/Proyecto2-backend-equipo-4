@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace PosManager.WebApi.Controllers
 {
     [ApiController]
-    [Route("banco")]
+    [Route("api/banco")]
     public class BancosController : ControllerBase
     {
         private readonly BancoBusiness _business;
