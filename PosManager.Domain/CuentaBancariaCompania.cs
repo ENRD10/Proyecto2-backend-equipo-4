@@ -21,7 +21,8 @@ namespace PosManager.Domain
 
         public CuentaBancariaCompania()
         {
-
+            this.banco = new Banco();
+            this.compania = new Compania();
         }
 
         public CuentaBancariaCompania(int id, string numeroCuenta,

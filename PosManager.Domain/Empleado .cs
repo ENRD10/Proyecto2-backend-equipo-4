@@ -12,7 +12,6 @@ namespace PosManager.Domain
         private string passwordTemporal;
         private string numeroCuentaBancaria;
         private string nombreBancoCuenta;
-        private Compania compania;
 
         public Empleado()
         {
@@ -24,8 +23,7 @@ namespace PosManager.Domain
             string telefonoMovil,
             string passwordTemporal,
             string numeroCuentaBancaria,
-            string nombreBancoCuenta,
-            Compania compania)
+            string nombreBancoCuenta)
         {
             this.estadoCivil = estadoCivil;
             this.telefonoOficina = telefonoOficina;
@@ -33,7 +31,6 @@ namespace PosManager.Domain
             this.passwordTemporal = passwordTemporal;
             this.numeroCuentaBancaria = numeroCuentaBancaria;
             this.nombreBancoCuenta = nombreBancoCuenta;
-            this.compania = compania;
         }
 
         public string EstadoCivil { get => estadoCivil; set => estadoCivil = value; }
@@ -42,6 +39,5 @@ namespace PosManager.Domain
         public string PasswordTemporal { get => passwordTemporal; set => passwordTemporal = value; }
         public string NumeroCuentaBancaria { get => numeroCuentaBancaria; set => numeroCuentaBancaria = value; }
         public string NombreBancoCuenta { get => nombreBancoCuenta; set => nombreBancoCuenta = value; }
-        public Compania Compania { get => compania; set => compania = value; }
     }
 }

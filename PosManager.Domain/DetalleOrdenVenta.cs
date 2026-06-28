@@ -6,7 +6,6 @@ namespace PosManager.Domain
 {
     public class DetalleOrdenVenta
     {
-        private OrdenVenta ordenVenta;
         private Producto producto;
         private decimal impuesto;
         private int cantidad;
@@ -21,7 +20,6 @@ namespace PosManager.Domain
         }
 
         public DetalleOrdenVenta(
-            OrdenVenta ordenVenta,
             Producto producto,
             decimal impuesto,
             int cantidad,
@@ -30,7 +28,6 @@ namespace PosManager.Domain
             decimal precioSubtotal,
             decimal precioTotal)
         {
-            this.ordenVenta = ordenVenta;
             this.producto = producto;
             this.impuesto = impuesto;
             this.cantidad = cantidad;
@@ -40,7 +37,6 @@ namespace PosManager.Domain
             this.precioTotal = precioTotal;
         }
 
-        public OrdenVenta OrdenVenta { get => ordenVenta; set => ordenVenta = value; }
         public Producto Producto { get => producto; set => producto = value; }
         public decimal Impuesto { get => impuesto; set => impuesto = value; }
         public int Cantidad { get => cantidad; set => cantidad = value; }

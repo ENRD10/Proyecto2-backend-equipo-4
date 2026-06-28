@@ -14,15 +14,16 @@ namespace PosManager.Domain
         private string cedulaJuridica;
         private string pais;
         private string direccion;
+        private List<Empleado> empleados;
 
         public Compania()
         {
-
+            this.empleados = new List<Empleado>();
         }
 
         public Compania(int id, string nombre, string logo,
             string email, string telefono, string cedulaJuridica,
-            string pais, string direccion)
+            string pais, string direccion, List<Empleado> empleados)
         {
             this.id = id;
             this.nombre = nombre;
@@ -32,6 +33,7 @@ namespace PosManager.Domain
             this.cedulaJuridica = cedulaJuridica;
             this.pais = pais;
             this.direccion = direccion;
+            this.empleados = empleados;
         }
 
         public int Id { get => id; set => id = value; }
@@ -42,5 +44,6 @@ namespace PosManager.Domain
         public string CedulaJuridica { get => cedulaJuridica; set => cedulaJuridica = value; }
         public string Pais { get => pais; set => pais = value; }
         public string Direccion { get => direccion; set => direccion = value; }
+        public List<Empleado> Empleados { get => empleados; set => empleados = value; }
     }
 }
