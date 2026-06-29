@@ -37,9 +37,9 @@ namespace PosManager.Data
         }
 
         // 2. GET - GetBanco
-        public Banco GetBanco(int id)
+        public Banco? GetBanco(int id)
         {
-            Banco banco = null;
+            Banco? banco = null;
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
@@ -57,6 +57,34 @@ namespace PosManager.Data
                 }
             }
             return banco;
+        }
+
+        public bool ExisteBanco(int id)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                SqlCommand cmd = connection.CreateCommand();
+                cmd.CommandText = "SELECT COUNT(1) FROM Banco WHERE id = @id AND activo = 1";
+                cmd.CommandType = System.Data.CommandType.Text;
+
+                cmd.Parameters.AddWithValue("@id", id);
+                return (int)cmd.ExecuteScalar() > 0;
+            }
+        }
+
+        public bool ExisteCodigoIdentificador(string codigo, int excludeId = 0)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                SqlCommand cmd = connection.CreateCommand();
+                cmd.CommandText = "SELECT COUNT(1) FROM Banco WHERE codigo_identificador_banco = @codigo AND id <> @excludeId AND activo = 1";
+                cmd.CommandType = System.Data.CommandType.Text;
+                cmd.Parameters.AddWithValue("@codigo", codigo);
+                cmd.Parameters.AddWithValue("@excludeId", excludeId);
+                return (int)cmd.ExecuteScalar() > 0;
+            }
         }
 
         // 3. POST - CreateBanco (Cambiado para que coincida con el endpoint)
@@ -155,8 +183,8 @@ namespace PosManager.Data
             return new Banco
             {
                 Id = Convert.ToInt32(reader["id"]),
-                CodigoIdentificador = reader["codigo_identificador_banco"].ToString(),
-                Nombre = reader["nombre"].ToString(),
+                CodigoIdentificador = reader["codigo_identificador_banco"].ToString()!,
+                Nombre = reader["nombre"].ToString()!,
                 Email = reader["email"] != DBNull.Value ? reader["email"].ToString() : null,
                 Ciudad = reader["ciudad"] != DBNull.Value ? reader["ciudad"].ToString() : null,
                 Fax = reader["fax"] != DBNull.Value ? reader["fax"].ToString() : null,
@@ -171,17 +199,18 @@ namespace PosManager.Data
 
         private void SetParametros(SqlCommand cmd, Banco banco)
         {
-            cmd.Parameters.AddWithValue("@codigo", (object)banco.CodigoIdentificador ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@nombre", (object)banco.Nombre ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@email", (object)banco.Email ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@ciudad", (object)banco.Ciudad ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@fax", (object)banco.Fax ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@zip", (object)banco.Zip ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@pais", (object)banco.Pais ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@direccion", (object)banco.Direccion ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@telefono", (object)banco.Telefono ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@estadoPais", (object)banco.EstadoPais ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@codigo", (object?)banco.CodigoIdentificador ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@nombre", (object?)banco.Nombre ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@email", (object?)banco.Email ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ciudad", (object?)banco.Ciudad ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@fax", (object?)banco.Fax ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@zip", (object?)banco.Zip ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@pais", (object?)banco.Pais ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@direccion", (object?)banco.Direccion ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@telefono", (object?)banco.Telefono ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@estadoPais", (object?)banco.EstadoPais ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@activo", banco.Activo);
         }
+
     }
 }

@@ -56,12 +56,19 @@ namespace PosManager.WebApi.Controllers
         {
             try
             {
+                if (banco == null)
+                    return BadRequest("El cuerpo de la petición no puede estar vacío.");
+
                 var nuevo = _business.CreateBanco(banco);
                 return CreatedAtAction(nameof(GetBanco), new { id = nuevo.Id }, nuevo);
             }
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
             }
             catch (Exception ex)
             {
@@ -74,15 +81,25 @@ namespace PosManager.WebApi.Controllers
         {
             try
             {
+                if (banco == null)
+                    return BadRequest("El cuerpo de la petición no puede estar vacío.");
                 if (id != banco.Id)
                     return BadRequest("El ID de la URL no coincide con el ID del cuerpo de la petición.");
 
                 var editado = _business.EditBanco(banco);
                 return Ok(editado);
             }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
             }
             catch (Exception ex)
             {
@@ -97,6 +114,10 @@ namespace PosManager.WebApi.Controllers
             {
                 _business.DeleteBanco(id);
                 return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (ArgumentException ex)
             {

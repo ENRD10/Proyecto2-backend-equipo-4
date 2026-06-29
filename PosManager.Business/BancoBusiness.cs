@@ -19,18 +19,21 @@ namespace PosManager.Business
             return _bancoData.GetBancos();
         }
 
-        public Banco GetBanco(int id)
+        public Banco? GetBanco(int id)
         {
             if (id <= 0)
                 throw new ArgumentException("El ID de búsqueda debe ser mayor a cero.");
 
             return _bancoData.GetBanco(id);
         }
-
         public Banco CreateBanco(Banco banco)
         {
             ValidarEntidad(banco);
-            banco.Activo = true; // Todo banco nuevo nace activo
+
+            if (_bancoData.ExisteCodigoIdentificador(banco.CodigoIdentificador))
+                throw new InvalidOperationException($"Ya existe un banco con el código '{banco.CodigoIdentificador}'.");
+
+            banco.Activo = true;
             _bancoData.CreateBanco(banco);
             return banco;
         }
@@ -40,7 +43,14 @@ namespace PosManager.Business
             if (banco.Id <= 0)
                 throw new ArgumentException("El ID del banco a modificar es inválido.");
 
+            if (!_bancoData.ExisteBanco(banco.Id))
+                throw new KeyNotFoundException($"No se encontró el banco con ID {banco.Id}.");
+
             ValidarEntidad(banco);
+
+            if (_bancoData.ExisteCodigoIdentificador(banco.CodigoIdentificador, banco.Id))
+                throw new InvalidOperationException($"Ya existe otro banco con el código '{banco.CodigoIdentificador}'.");
+
             _bancoData.EditBanco(banco);
             return banco;
         }
@@ -49,6 +59,9 @@ namespace PosManager.Business
         {
             if (id <= 0)
                 throw new ArgumentException("El ID de eliminación debe ser mayor a cero.");
+
+            if (!_bancoData.ExisteBanco(id))
+                throw new KeyNotFoundException($"No se encontró el banco con ID {id}.");
 
             _bancoData.DeleteBanco(id);
         }
