@@ -100,17 +100,19 @@ namespace PosManager.Data
             var ventas = new List<VentaResponse>();
 
             const string sql = @"
-                SELECT 
-                    ov.numero_orden, ov.fk_cliente, ov.fk_empleado,
-                    ov.fecha_orden, ov.total_orden, ov.impuesto,
-                    p_cli.Nombre + ' ' + p_cli.Apellidos AS NombreCliente,
-                    p_emp.Nombre + ' ' + p_emp.Apellidos AS NombreEmpleado
-                FROM pos_orden ov
-                INNER JOIN Cliente c ON ov.fk_cliente = c.Id
-                INNER JOIN Persona p_cli ON c.Id = p_cli.Id
-                INNER JOIN Empleado e ON ov.fk_empleado = e.Id
-                INNER JOIN Persona p_emp ON e.Id = p_emp.Id
-                ORDER BY ov.fecha_orden DESC";
+                                SELECT 
+                                    ov.numero_orden, 
+                                    ov.fk_cliente, 
+                                    ov.fk_empleado,
+                                    ov.fecha_orden, 
+                                    ov.total_orden, 
+                                    ov.impuesto,
+                                    CONCAT(c.nombre, ' ', c.apellidos) AS NombreCliente,
+                                    CONCAT(e.nombre, ' ', e.apellidos) AS NombreEmpleado
+                                FROM Pos_Orden ov
+                                INNER JOIN Cliente c ON ov.fk_cliente = c.id
+                                INNER JOIN Empleado e ON ov.fk_empleado = e.id
+                                ORDER BY ov.fecha_orden DESC";
 
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
@@ -143,30 +145,38 @@ namespace PosManager.Data
             VentaResponse? venta = null;
 
             const string sqlCabecera = @"
-                SELECT 
-                    ov.numero_orden, ov.fk_cliente, ov.fk_empleado,
-                    ov.fecha_orden, ov.total_orden, ov.impuesto,
-                    p_cli.Nombre + ' ' + p_cli.Apellidos AS NombreCliente,
-                    p_emp.Nombre + ' ' + p_emp.Apellidos AS NombreEmpleado
-                FROM pos_orden ov
-                INNER JOIN Cliente c ON ov.fk_cliente = c.Id
-                INNER JOIN Persona p_cli ON c.Id = p_cli.Id
-                INNER JOIN Empleado e ON ov.fk_empleado = e.Id
-                INNER JOIN Persona p_emp ON e.Id = p_emp.Id
-                WHERE ov.numero_orden = @numero_orden";
+                                        SELECT 
+                                            ov.numero_orden, 
+                                            ov.fk_cliente, 
+                                            ov.fk_empleado,
+                                            ov.fecha_orden, 
+                                            ov.total_orden, 
+                                            ov.impuesto,
+                                            CONCAT(c.nombre, ' ', c.apellidos) AS NombreCliente,
+                                            CONCAT(e.nombre, ' ', e.apellidos) AS NombreEmpleado
+                                        FROM Pos_Orden ov
+                                        INNER JOIN Cliente c ON ov.fk_cliente = c.id
+                                        INNER JOIN Empleado e ON ov.fk_empleado = e.id
+                                        WHERE ov.numero_orden = @numero_orden";
 
             const string sqlDetalles = @"
-                SELECT 
-                    d.fk_producto, pr.NombreEtiqueta AS NombreProducto,
-                    d.cantidad, d.precio_unitario, d.descuento,
-                    d.impuesto, d.precio_subtotal, d.precio_total
-                FROM pos_orden_detalle d
-                INNER JOIN Producto pr ON d.fk_producto = pr.ProductId
-                WHERE d.fk_pos_orden = @numero_orden";
+                                        SELECT 
+                                            d.fk_producto, 
+                                            pr.nombre_etiqueta AS NombreProducto,
+                                            d.cantidad, 
+                                            d.precio_unitario, 
+                                            d.descuento,
+                                            d.impuesto, 
+                                            d.precio_subtotal, 
+                                            d.precio_total
+                                        FROM Pos_Orden_Detalle d
+                                        INNER JOIN Producto pr ON d.fk_producto = pr.product_id
+                                        WHERE d.fk_pos_orden = @numero_orden";
 
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
 
+            // 1. Leer Cabecera
             using (var cmd = new SqlCommand(sqlCabecera, connection))
             {
                 cmd.Parameters.AddWithValue("@numero_orden", numeroOrden);
@@ -182,13 +192,17 @@ namespace PosManager.Data
                         NombreEmpleado = reader.GetString(reader.GetOrdinal("NombreEmpleado")),
                         FechaOrden = reader.GetDateTime(reader.GetOrdinal("fecha_orden")),
                         TotalOrden = reader.GetDecimal(reader.GetOrdinal("total_orden")),
-                        Impuesto = reader.GetDecimal(reader.GetOrdinal("impuesto"))
+                        Impuesto = reader.GetDecimal(reader.GetOrdinal("impuesto")),
+                        // Asegúrate de inicializar la lista de detalles si tu clase no lo hace en el constructor
+                        Detalles = new List<DetalleVentaResponse>()
                     };
                 }
             }
 
+            // Si no se encontró la cabecera, salimos temprano
             if (venta == null) return null;
 
+            // 2. Leer Detalles
             using (var cmd = new SqlCommand(sqlDetalles, connection))
             {
                 cmd.Parameters.AddWithValue("@numero_orden", numeroOrden);
